@@ -4,7 +4,7 @@ type Notification struct {
 	ID              int    `json:"id"`
 	Chamado_id      string `json:"chamado_id"`
 	Tipo            string `json:"tipo"`
-	Cpf             string `json:"-"`
+	Cpf             string `json:"cpf"`
 	Cpf_encrypted   string `json:"-"`
 	Cpf_bindex      string `json:"-"`
 	Status_anterior string `json:"status_anterior"`

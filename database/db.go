@@ -34,11 +34,13 @@ func ConnectDB() (*sql.DB, error) {
 	return db, nil
 }
 
-func GetNotifications(db *sql.DB) ([]model.Notification, error) {
-	rows, err := db.Query("SELECT id, chamado_id, tipo, status_anterior, status_novo, titulo, descricao, timestamp, is_read FROM notifications")
+func GetNotifications(db *sql.DB, cpfEncrypted string) ([]model.Notification, error) {
+
+	rows, err := db.Query("SELECT id, chamado_id, tipo, status_anterior, status_novo, titulo, descricao, timestamp, is_read FROM notifications WHERE cpf_blind_index = $1", cpfEncrypted)
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var notifications []model.Notification

@@ -11,6 +11,7 @@ import (
 )
 
 func GetNotifications(c *gin.Context) {
+
 	db, err := database.ConnectDB()
 
 	if err != nil {
@@ -18,7 +19,11 @@ func GetNotifications(c *gin.Context) {
 	}
 	defer db.Close()
 
-	notifications, err := database.GetNotifications(db)
+	cpfQuery := c.MustGet("cpf").(string)
+
+	searchHash := GenerateBlindIndex(cpfQuery)
+
+	notifications, err := database.GetNotifications(db, searchHash)
 	if err != nil {
 		log.Fatalf("Error fetching notifications: %v", err)
 	}
