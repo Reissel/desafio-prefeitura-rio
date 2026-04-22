@@ -11,19 +11,11 @@ import (
 )
 
 func GetNotifications(c *gin.Context) {
-
-	db, err := database.ConnectDB()
-
-	if err != nil {
-		log.Fatalf("Could not connect to DB: %v", err)
-	}
-	defer db.Close()
-
 	cpfQuery := c.MustGet("cpf").(string)
 
 	searchHash := GenerateBlindIndex(cpfQuery)
 
-	notifications, err := database.GetNotifications(db, searchHash)
+	notifications, err := database.GetNotifications(searchHash)
 	if err != nil {
 		log.Fatalf("Error fetching notifications: %v", err)
 	}
@@ -71,6 +63,50 @@ func CreateNotification(c *gin.Context) {
 
 	c.JSON(201, gin.H{
 		"message": "Notification created successfully",
-		"id":      notification.ID,
+		"data":    notification.ID,
+	})
+}
+
+func SetIsReadNotification(c *gin.Context) {
+	id := c.Param("id")
+
+	cpfQuery := c.MustGet("cpf").(string)
+
+	searchHash := GenerateBlindIndex(cpfQuery)
+
+	updatedId, err := database.SetIsReadNotification(id, searchHash)
+
+	if err != nil {
+		fmt.Print(err)
+
+		c.JSON(500, gin.H{"error": "Failed to save to database"})
+		return
+	}
+
+	c.JSON(201, gin.H{
+		"message": "Notification updated successfully",
+		"data":    updatedId,
+	})
+}
+
+func CountUnreadNotifications(c *gin.Context) {
+	var count int
+
+	cpfQuery := c.MustGet("cpf").(string)
+
+	searchHash := GenerateBlindIndex(cpfQuery)
+
+	count, err := database.CountUnreadNotifications(searchHash)
+
+	if err != nil {
+		fmt.Print(err)
+
+		c.JSON(500, gin.H{"error": "Failed to read from database"})
+		return
+	}
+
+	c.JSON(201, gin.H{
+		"message": "Notification count read successfully",
+		"data":    count,
 	})
 }

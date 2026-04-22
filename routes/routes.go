@@ -19,5 +19,7 @@ func SetupRouter(r *gin.Engine) {
 	v1.Use(middleware.AuthMiddleware())
 	{
 		v1.GET("/", logic.GetNotifications)
+		v1.PATCH("/:id/read", logic.SetIsReadNotification)
+		v1.GET("/unread-count", logic.CountUnreadNotifications)
 	}
 }
