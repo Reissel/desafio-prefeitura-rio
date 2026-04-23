@@ -9,8 +9,8 @@ services:
     stdin_open: true
     environment:
       - CGO_ENABLED=0
-      - JWT_SECRET=abobrinhaabobrinhaabobrinhaabobrinhaabobrinha
-      - X_SIGNATURE_SECRET=abobrinha
+      - JWT_SECRET=mystrongestsecreteverforeverandever
+      - X_SIGNATURE_SECRET=mystrongestsecret
     ports:
       - "8080:8080"
   db:
