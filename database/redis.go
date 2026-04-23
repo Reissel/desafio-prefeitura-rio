@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	redis_host = "localhost"
+	redis_host = "redis_cache"
 	redis_port = 6379
 )
 
