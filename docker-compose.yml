@@ -2,12 +2,15 @@ services:
 
   app:
     build: .
+    container_name: app_go
     volumes:
       - .:/app
     tty: true
     stdin_open: true
     environment:
       - CGO_ENABLED=0
+      - JWT_SECRET=abobrinhaabobrinhaabobrinhaabobrinhaabobrinha
+      - X_SIGNATURE_SECRET=abobrinha
     ports:
       - "8080:8080"
   db:
@@ -26,7 +29,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin_container
+    container_name: pgadmin
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
@@ -47,6 +50,7 @@ services:
 
   redisinsight:
     image: redis/redisinsight:latest
+    container_name: redis_insight
     ports:
       - "5540:5540"
     volumes:

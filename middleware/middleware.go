@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -18,11 +19,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// TODO: Alterar secret do JWT
-var jwtSecret = []byte("abobrinhaabobrinhaabobrinhaabobrinhaabobrinha")
-
-// TODO: Alterar secret do header X-Signature-256
-const SecretKey = "abobrinha"
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+var secretKey = os.Getenv("X_SIGNATURE_SECRET")
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -86,7 +84,7 @@ func SignatureMiddleware() gin.HandlerFunc {
 
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
-		h := hmac.New(sha256.New, []byte(SecretKey))
+		h := hmac.New(sha256.New, []byte(secretKey))
 		h.Write(bodyBytes)
 		expectedSignature := hex.EncodeToString(h.Sum(nil))
 
