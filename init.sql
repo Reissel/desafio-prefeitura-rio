@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     chamado_id VARCHAR(20) NOT NULL,
     tipo VARCHAR(20),
     cpf_encrypted BYTEA NOT NULL,
-    cpf_blind_index VARCHAR(64) UNIQUE NOT NULL,
+    cpf_blind_index VARCHAR(64) NOT NULL,
     status_anterior TEXT,
     status_novo TEXT,
     titulo TEXT,

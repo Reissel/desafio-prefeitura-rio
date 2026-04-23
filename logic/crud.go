@@ -61,10 +61,14 @@ func CreateNotification(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, gin.H{
+	c.Set("response", gin.H{
 		"message": "Notification created successfully",
 		"data":    notification.ID,
 	})
+
+	c.Set("notification", notification)
+
+	c.Next()
 }
 
 func SetIsReadNotification(c *gin.Context) {
