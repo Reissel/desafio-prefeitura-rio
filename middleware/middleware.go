@@ -2,16 +2,20 @@ package middleware
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"desafio-prefeitura-rio/database"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9"
 )
 
 // TODO: Alterar secret do JWT
@@ -91,6 +95,41 @@ func SignatureMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		c.Next()
+	}
+}
+
+func IdempotencyMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		key := c.GetHeader("X-Signature-256")
+
+		if key == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing signature"})
+			return
+		}
+
+		rdb := database.ConnectRedis()
+
+		ctx := context.Background()
+
+		result, err := rdb.SetArgs(ctx, key, "PROCESSING", redis.SetArgs{
+			Mode: "NX",
+			TTL:  10 * time.Minute,
+		}).Result()
+
+		if err == redis.Nil {
+			val, _ := rdb.Get(ctx, key).Result()
+
+			if val == "PROCESSING" {
+				c.AbortWithStatusJSON(http.StatusOK, gin.H{"message": "Duplicate request", "data": val})
+				return
+			}
+		} else if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Redis error"})
+			return
+		}
+
+		fmt.Printf("Key set successfully: %s", result)
 		c.Next()
 	}
 }

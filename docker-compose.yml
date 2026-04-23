@@ -34,6 +34,15 @@ services:
     volumes:
       - redis_data:/data
 
+  redisinsight:
+    image: redis/redisinsight:latest
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight_data:/data
+    restart: always
+
 volumes:
   postgres_data:
   redis_data:
+  redisinsight_data:

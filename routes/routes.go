@@ -13,7 +13,7 @@ func SetupRouter(r *gin.Engine) {
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
 
-	r.POST("/", middleware.SignatureMiddleware(), logic.CreateNotification)
+	r.POST("/", middleware.SignatureMiddleware(), middleware.IdempotencyMiddleware(), logic.CreateNotification)
 
 	v1 := r.Group("/notifications")
 	v1.Use(middleware.AuthMiddleware())
