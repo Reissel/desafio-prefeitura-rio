@@ -11,6 +11,14 @@ services:
       - CGO_ENABLED=0
       - JWT_SECRET=mystrongestsecreteverforeverandever
       - X_SIGNATURE_SECRET=mystrongestsecret
+      - POSTGRES_HOST=postgres_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=prefeito
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=prefeitura
+      - REDIS_HOST=redis_cache
+      - REDIS_PORT=6379
+
     ports:
       - "8080:8080"
   db:

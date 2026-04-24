@@ -2,18 +2,19 @@ package database
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/redis/go-redis/v9"
 )
 
-const (
-	redis_host = "redis_cache"
-	redis_port = 6379
+var (
+	redis_host = os.Getenv("REDIS_HOST")
+	redis_port = os.Getenv("REDIS_PORT")
 )
 
 func ConnectRedis() *redis.Client {
 
-	rdb := redis.NewClient(&redis.Options{Addr: fmt.Sprintf("%s:%d", redis_host, redis_port)})
+	rdb := redis.NewClient(&redis.Options{Addr: fmt.Sprintf("%s:%s", redis_host, redis_port)})
 
 	return rdb
 }

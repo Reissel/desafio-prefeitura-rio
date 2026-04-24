@@ -5,20 +5,25 @@ import (
 	"desafio-prefeitura-rio/model"
 	"fmt"
 	"log"
+	"os"
 
 	_ "github.com/lib/pq"
 )
 
-const (
-	host     = "postgres_db"
-	port     = 5432
-	user     = "prefeito"
-	password = "admin"
-	dbname   = "prefeitura"
+var (
+	host     = os.Getenv("POSTGRES_HOST")
+	port     = os.Getenv("POSTGRES_PORT")
+	user     = os.Getenv("POSTGRES_USER")
+	password = os.Getenv("POSTGRES_PASSWORD")
+	dbname   = os.Getenv("POSTGRES_DB")
 )
 
+type PostgresNotificationRepo struct {
+	DB *sql.DB
+}
+
 func ConnectDB() (*sql.DB, error) {
-	connStr := fmt.Sprintf("host=%s port=%d user=%s "+
+	connStr := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
@@ -35,7 +40,27 @@ func ConnectDB() (*sql.DB, error) {
 	return db, nil
 }
 
-func GetNotifications(cpfEncrypted string) ([]model.Notification, error) {
+func (r *PostgresNotificationRepo) CreateNotification(notification model.Notification, blindIndex string, encryptedBlob []byte) (int, error) {
+
+	query := `
+        INSERT INTO notifications (chamado_id, tipo, cpf_encrypted, cpf_blind_index, status_anterior, status_novo, titulo, descricao, timestamp) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+        RETURNING id`
+
+	db, err := ConnectDB()
+	if err != nil {
+		log.Fatalf("Could not connect to DB: %v", err)
+	}
+	defer db.Close()
+
+	err = db.QueryRow(query, notification.Chamado_id, notification.Tipo, encryptedBlob, blindIndex,
+		notification.Status_anterior, notification.Status_novo, notification.Titulo, notification.Descricao, notification.Timestamp).Scan(&notification.ID)
+
+	return notification.ID, err
+
+}
+
+func (r *PostgresNotificationRepo) GetNotifications(cpfEncrypted string) ([]model.Notification, error) {
 
 	db, err := ConnectDB()
 
@@ -70,8 +95,7 @@ func GetNotifications(cpfEncrypted string) ([]model.Notification, error) {
 	return notifications, nil
 }
 
-func SetIsReadNotification(id string, cpfEncrypted string) (string, error) {
-
+func (r *PostgresNotificationRepo) SetIsReadNotification(id string, cpfEncrypted string) (string, error) {
 	var updatedId string
 
 	db, err := ConnectDB()
@@ -97,7 +121,7 @@ func SetIsReadNotification(id string, cpfEncrypted string) (string, error) {
 	return updatedId, err
 }
 
-func CountUnreadNotifications(cpfEncrypted string) (int, error) {
+func (r *PostgresNotificationRepo) CountUnreadNotifications(cpfEncrypted string) (int, error) {
 	var count int
 
 	db, err := ConnectDB()
