@@ -1,0 +1,55 @@
+services:
+
+  app-test:
+    build: .
+    container_name: app_go_test
+    tty: true
+    stdin_open: true
+    environment:
+      - CGO_ENABLED=0
+    env_file:
+      - 'test.env'
+    depends_on:
+      - db-test
+      - redis-test
+    ports:
+      - "8080:8080"
+
+  app-tester:
+    build:
+        context: .
+        dockerfile: Dockerfile.test
+    depends_on:
+      - app-test
+    environment:
+      - CGO_ENABLED=0
+      - APP_URL=http://app_go_test:8080
+    env_file:
+      - 'test.env'
+
+  db-test:
+    image: postgres:16-alpine3.22
+    container_name: postgres_db_test
+    restart: always
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=test
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_test:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis-test:
+    image: redis:8.4.2-alpine3.22
+    container_name: redis_cache_test
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_test:/data
+
+volumes:
+  postgres_data_test:
+  redis_data_test:

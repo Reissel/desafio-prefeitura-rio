@@ -108,3 +108,7 @@ O projeto conta com um Redis que armazena temporariamente o header `X-Signature-
 ### GUIs
 
 As interfaces gráficas disponibilizadas pelo PgAdmin e Redis Insight podem ser acessadas em [PgAdmin](http://localhost:8000/login?next=/) e [RedisInsight](http://localhost:5540/), respectivamente, para facilitar a visualização dos dados processados pelo sistema.
+
+### Testes
+
+Para executar os testes de integração basta executar o comando `just test`, ele irá criar um deploy apartado definido no `docker-compose-test.yml` e `Dockerfile.test` para rodar os testes.

@@ -3,24 +3,18 @@ services:
   app:
     build: .
     container_name: app_go
-    volumes:
-      - .:/app
     tty: true
     stdin_open: true
     environment:
       - CGO_ENABLED=0
-      - JWT_SECRET=mystrongestsecreteverforeverandever
-      - X_SIGNATURE_SECRET=mystrongestsecret
-      - POSTGRES_HOST=postgres_db
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=prefeito
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=prefeitura
-      - REDIS_HOST=redis_cache
-      - REDIS_PORT=6379
-
+    env_file:
+      - 'prod.env'
+    depends_on:
+      - db
+      - redis
     ports:
       - "8080:8080"
+
   db:
     image: postgres:16-alpine3.22
     container_name: postgres_db
@@ -46,6 +40,8 @@ services:
       - "8000:80"
     depends_on:
       - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
   redis:
     image: redis:8.4.2-alpine3.22
@@ -61,11 +57,11 @@ services:
     container_name: redis_insight
     ports:
       - "5540:5540"
-    volumes:
-      - redisinsight_data:/data
     restart: always
+    depends_on:
+      - redis
 
 volumes:
   postgres_data:
   redis_data:
-  redisinsight_data:
+  pgadmin_data:
