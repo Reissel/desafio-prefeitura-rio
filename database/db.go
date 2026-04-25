@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"desafio-prefeitura-rio/model"
 	"fmt"
-	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -47,13 +46,7 @@ func (r *PostgresNotificationRepo) CreateNotification(notification model.Notific
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
         RETURNING id`
 
-	db, err := ConnectDB()
-	if err != nil {
-		log.Fatalf("Could not connect to DB: %v", err)
-	}
-	defer db.Close()
-
-	err = db.QueryRow(query, notification.Chamado_id, notification.Tipo, encryptedBlob, blindIndex,
+	err := r.DB.QueryRow(query, notification.Chamado_id, notification.Tipo, encryptedBlob, blindIndex,
 		notification.Status_anterior, notification.Status_novo, notification.Titulo, notification.Descricao, notification.Timestamp).Scan(&notification.ID)
 
 	return notification.ID, err
@@ -62,19 +55,12 @@ func (r *PostgresNotificationRepo) CreateNotification(notification model.Notific
 
 func (r *PostgresNotificationRepo) GetNotifications(cpfEncrypted string) ([]model.Notification, error) {
 
-	db, err := ConnectDB()
-
-	if err != nil {
-		log.Fatalf("Could not connect to DB: %v", err)
-	}
-	defer db.Close()
-
 	query := `
         SELECT id, chamado_id, tipo, status_anterior, status_novo, titulo, descricao, timestamp, is_read
 		FROM notifications
 		WHERE cpf_blind_index = $1`
 
-	rows, err := db.Query(query, cpfEncrypted)
+	rows, err := r.DB.Query(query, cpfEncrypted)
 	if err != nil {
 		return nil, err
 	}
@@ -90,20 +76,11 @@ func (r *PostgresNotificationRepo) GetNotifications(cpfEncrypted string) ([]mode
 		notifications = append(notifications, n)
 	}
 
-	fmt.Printf("Retrieved %d notifications\n", len(notifications))
-
 	return notifications, nil
 }
 
 func (r *PostgresNotificationRepo) SetIsReadNotification(id string, cpfEncrypted string) (string, error) {
 	var updatedId string
-
-	db, err := ConnectDB()
-
-	if err != nil {
-		log.Fatalf("Could not connect to DB: %v", err)
-	}
-	defer db.Close()
 
 	query := `
         UPDATE notifications
@@ -112,8 +89,7 @@ func (r *PostgresNotificationRepo) SetIsReadNotification(id string, cpfEncrypted
 		AND cpf_blind_index = $2
         RETURNING id`
 
-	err = db.QueryRow(query, id, cpfEncrypted).Scan(&updatedId)
-
+	err := r.DB.QueryRow(query, id, cpfEncrypted).Scan(&updatedId)
 	if err != nil {
 		return "", err
 	}
@@ -124,20 +100,13 @@ func (r *PostgresNotificationRepo) SetIsReadNotification(id string, cpfEncrypted
 func (r *PostgresNotificationRepo) CountUnreadNotifications(cpfEncrypted string) (int, error) {
 	var count int
 
-	db, err := ConnectDB()
-
-	if err != nil {
-		log.Fatalf("Could not connect to DB: %v", err)
-	}
-	defer db.Close()
-
 	query := `
         SELECT COUNT(*)
 		FROM notifications
 		WHERE cpf_blind_index = $1
 		AND is_read = false`
 
-	dberror := db.QueryRow(query, cpfEncrypted).Scan(&count)
+	dberror := r.DB.QueryRow(query, cpfEncrypted).Scan(&count)
 
 	if dberror != nil {
 		return 0, dberror

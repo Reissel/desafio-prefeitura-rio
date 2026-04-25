@@ -3,6 +3,7 @@ services:
   app-test:
     build: .
     container_name: app_go_test
+    restart: always
     environment:
       - CGO_ENABLED=0
     env_file:

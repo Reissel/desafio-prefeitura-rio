@@ -1,8 +1,9 @@
 package logic
 
 import (
+	"context"
 	"desafio-prefeitura-rio/model"
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,8 @@ type NotificationProvider interface {
 }
 
 type NotificationHandler struct {
-	DB NotificationProvider
+	DB    NotificationProvider
+	Store DLQStore
 }
 
 func (h *NotificationHandler) GetNotifications(c *gin.Context) {
@@ -30,6 +32,7 @@ func (h *NotificationHandler) GetNotifications(c *gin.Context) {
 
 	notifications, err := h.DB.GetNotifications(searchHash)
 	if err != nil {
+		log.Print(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to database: " + err.Error()})
 		return
 	}
@@ -48,13 +51,25 @@ func (h *NotificationHandler) CreateNotification(c *gin.Context) {
 	blindIndex := GenerateBlindIndex(notification.Cpf)
 	encryptedBlob, err := Encrypt(notification.Cpf)
 	if err != nil {
+		log.Print(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Encryption failed: " + err.Error()})
 		return
 	}
 
 	createdId, err := h.DB.CreateNotification(notification, blindIndex, encryptedBlob)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
+
+		ctx := context.Background()
+
+		dlqId, dlqErr := h.Store.Save(ctx, notification)
+		if dlqErr != nil {
+			log.Print(dlqErr)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to dlq: " + dlqErr.Error()})
+			return
+		}
+
+		log.Printf("Saved request to dlq with id %d", dlqId)
 
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to database: " + err.Error()})
 		return
@@ -80,8 +95,7 @@ func (h *NotificationHandler) SetIsReadNotification(c *gin.Context) {
 	updatedId, err := h.DB.SetIsReadNotification(id, searchHash)
 
 	if err != nil {
-		fmt.Print(err)
-
+		log.Print(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to database: " + err.Error()})
 		return
 	}
@@ -102,8 +116,7 @@ func (h *NotificationHandler) CountUnreadNotifications(c *gin.Context) {
 	count, err := h.DB.CountUnreadNotifications(searchHash)
 
 	if err != nil {
-		fmt.Print(err)
-
+		log.Print(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read from database: " + err.Error()})
 		return
 	}

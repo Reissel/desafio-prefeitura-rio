@@ -20,6 +20,5 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash 
 WORKDIR /app
 
 COPY --from=builder app/prefeitura_app .
-COPY justfile .
 
 CMD ["./prefeitura_app"]

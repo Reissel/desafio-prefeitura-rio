@@ -11,3 +11,8 @@ CREATE TABLE IF NOT EXISTS notifications (
     "timestamp" TIMESTAMP,
     is_read BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE IF NOT EXISTS notifications_dlq (
+    id SERIAL PRIMARY KEY,
+    body JSONB
+)
