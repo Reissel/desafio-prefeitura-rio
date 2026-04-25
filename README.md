@@ -10,8 +10,9 @@ Esse projeto consiste em um sistema de notificações, responsável por receber 
 
 ## Requisitos
 
-- Docker Engine.
-- Docker Compose.
+- [Docker Engine](https://docs.docker.com/engine/install/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Just Task Runner](https://github.com/casey/just#installation) (Opcional)
 
 ## Arquitetura em Containers
 
@@ -23,7 +24,7 @@ Além dos serviços essenciais, foram acrescentados serviços para facilitar a v
 
 ## Como rodar o projeto
 
-Como o único pré-requisito é possuir o **Docker** e **Docker Compose** instalados, altere as variáveis de ambiente conforme necessário no arquivo `docker-compose.yml` na raiz do projeto e execute o comando: `docker compose up -d`.
+Com o **Docker** e **Docker Compose** instalados, altere as variáveis de ambiente conforme necessário no arquivo `docker-compose.yml` na raiz do projeto e execute o comando: `docker compose up -d`. Tendo o Just instalado, basta executar `just run` para subir todos os contêineres.
 
 ## API REST
 
@@ -111,4 +112,4 @@ As interfaces gráficas disponibilizadas pelo PgAdmin e Redis Insight podem ser 
 
 ### Testes
 
-Para executar os testes de integração basta executar o comando `just test`, ele irá criar um deploy apartado definido no `docker-compose-test.yml` e `Dockerfile.test` para rodar os testes.
+Para executar os testes basta executar o comando `just test`, ele irá rodar os testes unitários e criará um deploy apartado definido no `docker-compose-test.yml` e `Dockerfile.test` para rodar os testes de integração.

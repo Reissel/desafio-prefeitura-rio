@@ -3,8 +3,6 @@ services:
   app:
     build: .
     container_name: app_go
-    tty: true
-    stdin_open: true
     environment:
       - CGO_ENABLED=0
     env_file:

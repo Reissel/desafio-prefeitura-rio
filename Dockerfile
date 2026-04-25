@@ -22,4 +22,4 @@ WORKDIR /app
 COPY --from=builder app/prefeitura_app .
 COPY justfile .
 
-CMD ["just", "run"]
+CMD ["./prefeitura_app"]
