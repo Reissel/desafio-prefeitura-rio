@@ -113,3 +113,7 @@ As interfaces gráficas disponibilizadas pelo PgAdmin e Redis Insight podem ser 
 ### Testes
 
 Para executar os testes basta executar o comando `just test`, ele irá rodar os testes unitários e criará um deploy apartado definido no `docker-compose-test.yml` e `Dockerfile.test` para rodar os testes de integração.
+
+### DLQ
+
+O projeto conta com a existência de uma Dead Letter Queue montada no Postgres ou no Redis, por meio da variável `DLQ_TYPE` com os valores postgres ou redis. Ao tentar salvar uma notificação na base de dados, em caso de falha, o payload da requisição é enviado para a DLQ.
