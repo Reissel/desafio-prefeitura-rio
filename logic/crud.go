@@ -30,7 +30,7 @@ func (h *NotificationHandler) GetNotifications(c *gin.Context) {
 
 	notifications, err := h.DB.GetNotifications(searchHash)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to database: " + err.Error()})
 		return
 	}
 
@@ -48,7 +48,7 @@ func (h *NotificationHandler) CreateNotification(c *gin.Context) {
 	blindIndex := GenerateBlindIndex(notification.Cpf)
 	encryptedBlob, err := Encrypt(notification.Cpf)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Encryption failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Encryption failed: " + err.Error()})
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *NotificationHandler) CreateNotification(c *gin.Context) {
 	if err != nil {
 		fmt.Print(err)
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to database"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to database: " + err.Error()})
 		return
 	}
 
@@ -82,7 +82,7 @@ func (h *NotificationHandler) SetIsReadNotification(c *gin.Context) {
 	if err != nil {
 		fmt.Print(err)
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to database"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to database: " + err.Error()})
 		return
 	}
 
@@ -104,7 +104,7 @@ func (h *NotificationHandler) CountUnreadNotifications(c *gin.Context) {
 	if err != nil {
 		fmt.Print(err)
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read from database"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read from database: " + err.Error()})
 		return
 	}
 
