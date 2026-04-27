@@ -117,3 +117,45 @@ Para executar os testes basta executar o comando `just test`, ele irá rodar os 
 ### DLQ
 
 O projeto conta com a existência de uma Dead Letter Queue montada no Postgres ou no Redis, por meio da variável `DLQ_TYPE` com os valores postgres ou redis. Ao tentar salvar uma notificação na base de dados, em caso de falha, o payload da requisição é enviado para a DLQ.
+
+## Considerações
+
+### Branches e Commits
+
+Por estar trabalhando nesse projeto sozinho e de forma temporária, fiz commits direto na main, em contextos profissionais, sempre separo as minhas branches seguindo boas práticas separando o trabalho em branches diferentes e nomeando as branches de acordo com o seu objetivo: `feat/`, `bug/`, `hotfix/`.
+
+### REST API
+
+Em toda a lógica das rotas da API, respeitando a LGPD, em nenhum momento o CPF do usuário é armazenado no PostgreSQL ou no Redis em forma de texto, somente de forma encriptada e usando a estratégia de `Blind Index`.
+
+### Clean Code
+
+Nas rotas API e nas funções usadas pelo banco de dados, o código foi escrito seguindo as regras do clean code, usando interfaces e abstrações para diminuir o acoplamento entre os pacotes.
+
+### WebSocket
+
+O websocket montado armazena os clientes em memória, o que limita muito a quantidade de clientes que podem se conectar, uma forma robusta deve armazenar esses registros dos clientes conectados em um local de rápido acesso (talvez um Redis separado), também para manter a conexão ativa, deve ser implementado uma lógica de heartbeat para que a conexão não seja fechada por inatividade.
+
+### Testes
+
+Foram montados testes unitários e de integração somente a título de ilustração, não estão cobrindo todas as funcionalidades e nem todos os cenários dessas funcionalidades, com mais tempo os testes podem ser evoluídos para além de cobrir tudo, exportar um arquivo para utilizar em ferramentas de BI.
+
+### Observabilidade
+
+No projeto só foi montada uma rota de `/health`, para amadurecer a observabilidade, pode-se adicionar integrações com Datadog, New Relic, Prometheus, entre outros. Além disso, integrar ao SonarQube traria mais qualidade ao código apontando bugs, vulnerabilidades e code smells encontrados.
+
+### CI/CD
+
+Pela natureza do projeto ser pessoal, sem deploy, foi montado um arquivo simples para rodar os testes no Github Actions de forma ilustrativa.
+
+### DLQ
+
+Uma melhor implementação de uma DLQ pode ser feita utilizando serviços separados voltados somente para esse propósito, como Kafka ou RabbitMQ, dependendo do cenário de requisitos que essa DLQ deve corresponder. Outro ponto de atenção é que a DLQ armazena o CPF do usuário em forma de texto, isso só foi mantido por conta do tempo e natureza de teste do projeto, em contexto de produção o CPF seria criptografado assim como é feita na rota de `POST`.
+
+### Worker
+
+Para que a funcionalidade da DLQ fique completa dever ser construído um worker para executar os registros da DLQ e em caso de sucesso, removê-los da fila. Para isso, seria interessante montar uma rota exclusiva para esse worker que não tenha as barreiras da rota de `POST`, já que a requisição só cai na DLQ após ser validada.
+
+### Observações
+
+Por ser meu primeiro contato com a linguagem Go e suas ferramentas, bibliotecas e frameworks posso não ter utilizado o que há de melhor, mais moderno e seguro que o mercado utiliza, busquei utilizar as versões mais recentes e mais leves para ser um projeto rápido e com as tecnologias atuais.
