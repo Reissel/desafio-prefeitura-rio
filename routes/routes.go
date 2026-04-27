@@ -1,12 +1,14 @@
 package routes
 
 import (
+	"database/sql"
 	"desafio-prefeitura-rio/database"
 	"desafio-prefeitura-rio/logic"
 	"desafio-prefeitura-rio/middleware"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,10 +17,17 @@ func SetupRouter(r *gin.Engine) {
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
-
-	db, err := database.ConnectDB()
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+	var db *sql.DB
+	var err error
+	for {
+		db, err = database.ConnectDB()
+		if err != nil {
+			log.Printf("Failed to connect to database: %v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		} else {
+			break
+		}
 	}
 
 	log.Print("Database connected!")
